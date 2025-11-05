@@ -1,0 +1,3 @@
+http-interface-clients:
+  demo-client:
+    url: http://localhost:${wiremock.port}
