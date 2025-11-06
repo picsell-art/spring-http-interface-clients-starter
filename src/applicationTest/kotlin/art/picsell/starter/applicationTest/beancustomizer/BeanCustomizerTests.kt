@@ -1,13 +1,10 @@
-package art.picsell.starter.applicationTest.demo
+package art.picsell.starter.applicationTest.beancustomizer
 
-import art.picsell.starter.applicationTest.demo.client.DemoClient
-import art.picsell.starter.applicationTest.demo.model.EchoRequest
+import art.picsell.starter.applicationTest.beancustomizer.client.BeanCustomizerClient
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
-import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
-import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import org.junit.jupiter.api.AfterAll
@@ -16,15 +13,17 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import kotlin.test.assertEquals
 
-@SpringBootTest(classes = [DemoApplication::class])
-class DemoClientTests {
+@SpringBootTest(classes = [BeanCustomizerApplication::class])
+@ActiveProfiles("bean-customizer")
+class BeanCustomizerTests {
 
     @Autowired
-    private lateinit var demoClient: DemoClient
+    private lateinit var client: BeanCustomizerClient
 
     companion object {
         private val wireMockServer = WireMockServer(wireMockConfig().dynamicPort())
@@ -54,36 +53,15 @@ class DemoClientTests {
     }
 
     @Test
-    fun `should fetch greeting message`() {
+    fun `should include bean customizer header`() {
         wireMockServer.stubFor(
-            get(urlPathEqualTo("/api/greeting"))
-                .withQueryParam("name", equalTo("Lev"))
-                .willReturn(okJson("""{"message":"Hello, Lev!"}"""))
+            get(urlPathEqualTo("/api/bean"))
+                .withHeader(BEAN_HEADER, equalTo(BEAN_HEADER_VALUE))
+                .willReturn(okJson("""{"message":"Bean header works"}"""))
         )
 
-        val response = demoClient.greeting("Lev")
+        val response = client.beanGreeting()
 
-        assertEquals("Hello, Lev!", response.message)
-    }
-
-    @Test
-    fun `should fetch item and echo payload`() {
-        wireMockServer.stubFor(
-            get(urlPathEqualTo("/api/items/7"))
-                .willReturn(okJson("""{"id":7,"title":"Sample item"}"""))
-        )
-        wireMockServer.stubFor(
-            post(urlPathEqualTo("/api/echo"))
-                .withRequestBody(equalToJson("""{"value":"ping"}"""))
-                .willReturn(okJson("""{"value":"ping","extra":"pong"}"""))
-        )
-
-        val item = demoClient.getItem(7)
-        val echo = demoClient.echo(EchoRequest("ping"))
-
-        assertEquals(7L, item.id)
-        assertEquals("Sample item", item.title)
-        assertEquals("ping", echo.value)
-        assertEquals("pong", echo.extra)
+        assertEquals("Bean header works", response.message)
     }
 }

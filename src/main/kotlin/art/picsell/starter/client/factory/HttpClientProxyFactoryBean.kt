@@ -3,6 +3,7 @@ package art.picsell.starter.client.factory
 import org.springframework.beans.factory.FactoryBean
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.boot.web.reactive.function.client.WebClientCustomizer
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
@@ -13,14 +14,15 @@ import reactor.netty.http.client.HttpClient
 class HttpClientProxyFactoryBean<T : Any>(
     private val serviceInterface: Class<T>,
     private val baseUrl: String,
-    private val clientName: String
+    private val customizerBeanName: String?,
+    private val customizerClass: Class<out WebClientCustomizer>?
 ) : FactoryBean<T>, InitializingBean {
 
     @Autowired
     private lateinit var webClientBuilder: WebClient.Builder
 
-    @Autowired(required = false)
-    private var customizers: Map<String, WebClientCustomizer> = emptyMap()
+    @Autowired
+    private lateinit var beanFactory: AutowireCapableBeanFactory
 
     private lateinit var proxy: T
 
@@ -31,12 +33,26 @@ class HttpClientProxyFactoryBean<T : Any>(
             .baseUrl(baseUrl)
             .clientConnector(ReactorClientHttpConnector(nettyClient))
 
-        customizers["${clientName}Customizer"]?.customize(builder)
+        resolveCustomizer()?.customize(builder)
 
         val client = builder.build()
         val adapter = WebClientAdapter.create(client)
         val factory = HttpServiceProxyFactory.builderFor(adapter).build()
         proxy = factory.createClient(serviceInterface)
+    }
+
+    private fun resolveCustomizer(): WebClientCustomizer? {
+        val beanName = customizerBeanName
+        if (!beanName.isNullOrBlank()) {
+            return beanFactory.getBean(beanName, WebClientCustomizer::class.java)
+        }
+
+        val clazz = customizerClass
+        if (clazz != null) {
+            return beanFactory.getBean(clazz)
+        }
+
+        return null
     }
 
     override fun getObject(): T = proxy

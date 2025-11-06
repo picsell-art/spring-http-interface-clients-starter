@@ -34,8 +34,35 @@ Small Spring Boot starter that automatically registers interfaces annotated with
    http-interface-clients:
      demo-client:
        url: https://example.com
+       # optional WebClient customizer
+       customizer-bean: demoClientCustomizer
+       # or
+       customizer-class: com.example.client.DemoClientCustomizer
    ```
 
 After these steps, `DemoClient` is a Spring bean backed by `WebClient` and can be injected into your services without manual factory code.
+
+## WebClient customization
+
+Every client can opt into custom `WebClient` tweaks (headers, timeouts, codecs, etc.) without touching global configuration:
+
+- `customizer-bean` – points to a named `WebClientCustomizer` bean that will be resolved from the application context.
+- `customizer-class` – accepts a fully qualified class name (string) of a `WebClientCustomizer` bean that already exists in the Spring context; the starter simply looks it up by type.
+
+Example showing both approaches:
+
+```yaml
+# application-class-customizer.yaml
+http-interface-clients:
+  class-customizer-client:
+    url: https://example.com
+    customizer-class: com.example.ClassHeaderCustomizer
+
+# application-bean-customizer.yaml
+http-interface-clients:
+  bean-customizer-client:
+    url: https://example.com
+    customizer-bean: beanHeaderCustomizer
+```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contributor guidelines and publishing instructions.

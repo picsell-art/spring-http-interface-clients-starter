@@ -1,4 +1,4 @@
-package art.picsell.starter.applicationTest.demo.model
+package art.picsell.starter.applicationTest.common.model
 
 data class GreetingResponse(
     val message: String

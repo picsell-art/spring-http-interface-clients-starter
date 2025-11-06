@@ -8,7 +8,7 @@ plugins {
     id("signing")
 }
 
-val starterVersion = "0.0.1"
+val starterVersion = "0.0.2"
 val artifact = "spring-http-interface-clients-starter"
 val starterGroup = "art.picsell.starter"
 group = starterGroup

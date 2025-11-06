@@ -1,0 +1,4 @@
+http-interface-clients:
+  bean-customizer-client:
+    url: http://localhost:${wiremock.port}
+    customizer-bean: beanHeaderCustomizer

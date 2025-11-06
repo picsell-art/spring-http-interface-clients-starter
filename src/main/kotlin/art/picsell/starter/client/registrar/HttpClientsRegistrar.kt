@@ -86,7 +86,8 @@ class HttpClientsRegistrar :
                         .genericBeanDefinition(HttpClientProxyFactoryBean::class.java)
                         .addConstructorArgValue(iface)
                         .addConstructorArgValue(clientProps.url)
-                        .addConstructorArgValue(clientName)
+                        .addConstructorArgValue(clientProps.customizerBean)
+                        .addConstructorArgValue(clientProps.customizerClass)
                         .beanDefinition
 
                     registry.registerBeanDefinition(beanName, beanDef)
