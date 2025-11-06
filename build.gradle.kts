@@ -97,6 +97,55 @@ signing {
     sign(publishing.publications)
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("github") {
+            groupId = starterGroup
+            artifactId = artifact
+            version = starterVersion
+
+            from(components["java"])
+
+            pom {
+                name.set("Spring HTTP Interface Clients Starter")
+                description.set(project.description)
+                url.set("https://github.com/picsell-art/spring-http-interface-clients-starter")
+                licenses {
+                    license {
+                        name.set("Apache License 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("vonpartridge")
+                        name.set("Lev Kurashchenko")
+                        email.set("l.kurashchenko@gmail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/picsell-art/spring-http-interface-clients-starter.git")
+                    developerConnection.set("scm:git:ssh://github.com/picsell-art/spring-http-interface-clients-starter.git")
+                    url.set("https://github.com/picsell-art/spring-http-interface-clients-starter")
+                }
+            }
+        }
+    }
+
+    repositories {
+        // GitHub Packages
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/picsell-art/spring-http-interface-clients-starter")
+
+            credentials {
+                username = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                password = findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
 mavenPublishing {
     coordinates(starterGroup, artifact, starterVersion)
 
@@ -128,9 +177,16 @@ mavenPublishing {
     }
 }
 
-afterEvaluate {
-    val javadocJar by tasks.named("plainJavadocJar")
-    tasks.matching { it.name.startsWith("generateMetadataFileFor") }.configureEach {
-        dependsOn(javadocJar)
+setDependants("signMavenPublication", "publishGithubPublicationToMavenCentralRepository")
+setDependants("plainJavadocJar", "generateMetadataFileFor")
+setDependants("publishMavenPublicationToMavenCentralRepository", "signGithubPublication")
+
+
+fun setDependants(parent: String, child: String) {
+    afterEvaluate {
+        val signMavenPublication by tasks.named(parent)
+        tasks.matching { it.name.startsWith(child) }.configureEach {
+            dependsOn(signMavenPublication)
+        }
     }
 }
