@@ -8,7 +8,7 @@ Small Spring Boot starter that automatically registers interfaces annotated with
    ```kotlin
    // build.gradle.kts
    dependencies {
-       implementation("art.picsell.starter:spring-http-interface-clients-starter:0.0.1")
+       implementation("art.picsell.starter:spring-http-interface-clients-starter:0.0.3")
    }
    ```
 2. **Enable client scanning** – place `@EnableHttpInterfaceClients` on a configuration class and optionally narrow scanning to specific packages.
