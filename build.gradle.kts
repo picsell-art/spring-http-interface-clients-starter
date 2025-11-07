@@ -3,12 +3,15 @@ import java.util.Base64
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
+
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.springframework.boot") version "3.5.7" apply false
+
     id("com.vanniktech.maven.publish") version "0.34.0"
     id("signing")
 }
 
-val starterVersion = "0.0.2"
+val starterVersion = "0.0.3"
 val artifact = "spring-http-interface-clients-starter"
 val starterGroup = "art.picsell.starter"
 group = starterGroup
@@ -18,8 +21,22 @@ description = "Spring Boot starter for automatically registered clients for HTTP
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(17)
+}
+
 
 sourceSets {
     val main by getting
@@ -43,7 +60,7 @@ configurations {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.7")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.2.0")
     }
 }
 
@@ -52,22 +69,23 @@ repositories {
 }
 
 dependencies {
-    api("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
+    compileOnly("org.springframework.boot:spring-boot")
+    compileOnly("org.springframework.boot:spring-boot-autoconfigure")
+
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    compileOnly("org.springframework.boot:spring-boot-starter-webflux")
+    compileOnly("org.springframework.boot:spring-boot-starter-validation")
+
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     add("applicationTestImplementation", "org.wiremock:wiremock-standalone:3.9.1")
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
-    }
+    add("applicationTestImplementation", "org.springframework.boot:spring-boot-starter-webflux")
 }
 
 tasks.withType<Test> {
@@ -128,6 +146,7 @@ publishing {
                     developerConnection.set("scm:git:ssh://github.com/picsell-art/spring-http-interface-clients-starter.git")
                     url.set("https://github.com/picsell-art/spring-http-interface-clients-starter")
                 }
+                properties.put("java.version", "17")
             }
         }
     }
