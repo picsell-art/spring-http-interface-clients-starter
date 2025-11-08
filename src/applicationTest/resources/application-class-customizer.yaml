@@ -1,4 +1,0 @@
-http-interface-clients:
-  class-customizer-client:
-    url: http://localhost:${wiremock.port}
-    customizer-class: art.picsell.starter.applicationTest.classcustomizer.customizer.ClassHeaderCustomizer

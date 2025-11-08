@@ -1,0 +1,8 @@
+package art.picsell.starter.applicationTest.validation.invalid
+
+import art.picsell.starter.client.autoconfigure.EnableHttpInterfaceClients
+import org.springframework.boot.autoconfigure.SpringBootApplication
+
+@SpringBootApplication
+@EnableHttpInterfaceClients
+class InvalidConfigApplication

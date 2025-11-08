@@ -1,0 +1,3 @@
+package art.picsell.starter.client.autoconfigure
+
+class EnableHttpInterfaceClientsMarker
